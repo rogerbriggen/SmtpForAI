@@ -109,6 +109,37 @@ recipient count must be within `MaxRecipients`, and each attachment within `MaxA
 - **`3` TLS/connection errors** — verify host/port and `--use-ssl`. Port `465` uses implicit
   TLS; port `587` uses STARTTLS; `--use-ssl false` disables both.
 
+### Use from an AI assistant via MCP
+
+`SmtpForAI mcp` starts a [Model Context Protocol](https://modelcontextprotocol.io) server over
+stdio so MCP-aware clients (Claude Desktop, Cursor, …) can call the tool directly. Configure
+SmtpForAI normally first (`SmtpForAI config`), then point the client at the published exe.
+
+**Claude Desktop** — add to `claude_desktop_config.json` (Settings → Developer → Edit Config):
+
+```json
+{
+  "mcpServers": {
+    "smtpforai": {
+      "command": "C:\\path\\to\\SmtpForAI.exe",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop. Three tools become available:
+
+| Tool | What it does |
+| --- | --- |
+| `send_email` | Sends an email. Supports `to`/`cc`/`bcc`, `subject`, `body`, `isHtml`, `from`, `attachments` (absolute paths), and `dryRun` (validate without sending). |
+| `validate_recipient` | Pure check: is an address well-formed *and* on the allowlist? No SMTP traffic. |
+| `get_config_status` | Read-only status: `configured`, `missing[]`, `hasPassword` (the password value is never returned), plus host/port and allowlist counts. |
+
+The MCP path uses the **same** allowlist, per-message limits, and fail-closed behavior as the
+CLI — there is no MCP-only "trusted" mode. There is intentionally no `set_config` tool, so an
+AI prompt cannot relax the policy or change credentials.
+
 ---
 
 ## For developers
@@ -120,9 +151,11 @@ SmtpForAI/                 # the CLI application
   Cli/                     # ArgParser, ExitCodes
   Commands/                # ConfigCommand, SendCommand
   Configuration/           # SmtpSettings, AppConfiguration, AppSettingsWriter, UserSecretsStore
+  Mcp/                     # McpCommand (stdio server), EmailTool ([McpServerTool] methods)
   Security/                # MailValidation (allowlist + limits)
+  Services/                # MailRequest, SendResult, MailSender (shared CLI + MCP core)
   appsettings.json         # committed template (no secrets)
-SmtpForAI.Tests/           # MSTest unit tests
+SmtpForAI.Tests/           # MSTest unit tests + MCP stdio smoke tests
 skill/                     # SKILL.md (AI skill manifest) + catalog.json
 .github/workflows/ci.yml   # CI
 ```
@@ -141,11 +174,19 @@ dotnet run --project SmtpForAI -- config show
 
 ### Design notes
 
-- **MailKit vs. Microsoft-only.** The project otherwise uses only Microsoft/BCL packages
-  (`Microsoft.Extensions.Configuration.*`, `System.Text.Json`). MailKit/MimeKit is the single
-  deliberate exception, chosen for proper STARTTLS, modern SASL auth, and OAuth2 headroom.
-- **AOT/trim.** MailKit/MimeKit are not fully trim/AOT safe, so `PublishAot` is **not** enabled.
-  Distribute via a (trimmed) self-contained `dotnet publish` instead.
+- **Microsoft-only, with two exceptions.** The project otherwise uses only Microsoft/BCL
+  packages. The two deliberate exceptions are **MailKit/MimeKit** (the library Microsoft
+  recommends in place of `System.Net.Mail.SmtpClient`) and **ModelContextProtocol** (the
+  Microsoft-+-Anthropic-maintained C# SDK for MCP).
+- **AOT/trim.** MailKit/MimeKit and the MCP SDK are both reflection-heavy and not
+  trim/AOT safe, so `PublishAot` is **not** enabled. Distribute via a self-contained
+  `dotnet publish` instead.
+- **CLI + MCP share one core.** Both `send` (CLI) and `send_email` (MCP) build a
+  `MailRequest`, hand it to `Services/MailSender`, which runs `MailValidation` (allowlist +
+  limits + address syntax) before any SMTP traffic. The security policy cannot diverge between
+  the two surfaces.
+- **MCP stdio gotcha.** `Mcp/McpCommand` routes all logging to **stderr** because stdout is
+  the MCP JSON-RPC channel. Any stray `Console.Write` there would corrupt the protocol.
 - **Reflection-free config.** `SmtpSettings.Load` reads values via the `IConfiguration` indexer
   and `GetChildren()` (no binder), keeping the door open to trimming.
 - **Secrets.** `UserSecretsStore` reads/writes `secrets.json` with `JsonNode`, keyed
@@ -170,6 +211,6 @@ honors the exit codes above.
 
 ## Roadmap
 
-- MCP interface
-- OAuth2 / XOAUTH2 authentication
+- HTTP / SSE MCP transport (currently stdio only)
+- OAuth2 / XOAUTH2 SMTP authentication
 - Optional DPAPI-encrypted secret storage on Windows

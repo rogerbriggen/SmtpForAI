@@ -30,10 +30,17 @@ internal sealed class AppConfiguration
 
     public SmtpSettings LoadSettings()
     {
+        // SecretsPath is the same file AddUserSecrets(UserSecretsId) would resolve to,
+        // but loading it directly as a JSON source keeps the lookup explicit and
+        // makes the class testable against a temp-dir secrets.json.
         var config = new ConfigurationBuilder()
             .AddJsonFile(AppSettingsPath, optional: true, reloadOnChange: false)
-            .AddUserSecrets(UserSecretsId)
+            .AddJsonFile(SecretsPath, optional: true, reloadOnChange: false)
             .Build();
         return SmtpSettings.Load(config);
     }
+
+    /// <summary>Test seam: build an instance with explicit file paths.</summary>
+    internal static AppConfiguration ForTesting(string appSettingsPath, string secretsPath, string userSecretsId = "test") =>
+        new(appSettingsPath, userSecretsId, secretsPath);
 }

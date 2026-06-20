@@ -57,3 +57,12 @@ recipients pass the allowlist before actually sending.
   user the recipient must be added via `config`.
 - Never put the SMTP password on the command line in shared/logged contexts beyond initial
   `config set`; it is stored in the OS user-secrets store thereafter.
+
+## MCP alternative
+
+The same executable can also run as an MCP (Model Context Protocol) server:
+`SmtpForAI mcp` (stdio transport). MCP-aware clients (Claude Desktop, Cursor, …) can call
+the tools `send_email`, `validate_recipient`, and `get_config_status` directly — same
+allowlist and limits as the CLI. If you have a choice between the two paths in a given
+host, prefer MCP (structured arguments, no shell-quoting concerns); fall back to this
+CLI skill when only shell invocation is available.

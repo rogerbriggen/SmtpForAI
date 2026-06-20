@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/catalog.json",
   "name": "smtpforai-skills",
-  "version": "0.1.0",
-  "description": "Skills for sending email via the SmtpForAI command-line tool.",
+  "version": "0.2.0",
+  "description": "Skills for sending email via the SmtpForAI command-line tool, plus an MCP server interface (same exe, `mcp` subcommand).",
   "owner": {
     "name": "Roger Briggen"
   },
@@ -20,6 +20,16 @@
         "send"
       ],
       "tags": ["email", "smtp", "cli", "notifications"]
+    }
+  ],
+  "mcpServers": [
+    {
+      "name": "smtpforai",
+      "description": "MCP server exposing send_email, validate_recipient, and get_config_status. Same allowlist/limits as the CLI.",
+      "command": "SmtpForAI",
+      "args": ["mcp"],
+      "transport": "stdio",
+      "tools": ["send_email", "validate_recipient", "get_config_status"]
     }
   ]
 }

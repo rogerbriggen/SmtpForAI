@@ -1,6 +1,7 @@
 using SmtpForAI.Cli;
 using SmtpForAI.Commands;
 using SmtpForAI.Configuration;
+using SmtpForAI.Mcp;
 
 namespace SmtpForAI;
 
@@ -18,6 +19,7 @@ internal static class Program
             {
                 "send" => SendCommand.Run(rest, app),
                 "config" => ConfigCommand.Run(rest, app),
+                "mcp" => McpCommand.Run(rest, app),
                 "help" or "--help" or "-h" => PrintUsage(ExitCodes.Success),
                 "" => StatusThenUsage(app),
                 _ => UnknownCommand(command),
@@ -81,6 +83,11 @@ internal static class Program
                   --attach <path>    Attachment (repeatable)
                   --json             Emit a machine-readable result: {"ok":true|false,...}
                   --dry-run          Validate (incl. allowlist/limits) without sending
+
+              SmtpForAI mcp                    Run as an MCP (Model Context Protocol) server over stdio.
+                                               Exposes send_email, validate_recipient, get_config_status.
+                                               Same allowlist/limits as the CLI; intended to be launched
+                                               by an MCP client (e.g. Claude Desktop), not run manually.
 
             Exit codes: 0 success, 1 usage error, 2 config/policy error, 3 send failure.
             """);
