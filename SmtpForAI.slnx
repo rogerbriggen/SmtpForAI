@@ -5,6 +5,12 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Projektmappenelemente/.github/">
+    <File Path=".github/dependabot.yml" />
+  </Folder>
+  <Folder Name="/Projektmappenelemente/.github/workflows/">
+    <File Path=".github/workflows/ci.yml" />
+  </Folder>
   <Project Path="SmtpForAI.Tests/SmtpForAI.Tests.csproj" />
   <Project Path="SmtpForAI/SmtpForAI.csproj" />
 </Solution>
