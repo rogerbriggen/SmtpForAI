@@ -17,6 +17,18 @@ jobs:
       - run: dotnet restore SmtpForAI.slnx
       - run: dotnet build SmtpForAI.slnx -c Release --no-restore
       - run: dotnet test SmtpForAI.slnx -c Release --no-build
+      - name: Publish self-contained linux-x64
+        run: >
+          dotnet publish SmtpForAI/SmtpForAI.csproj
+          -c Release -r linux-x64 --self-contained true
+          -o publish/linux-x64
+      - name: Upload linux-x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmtpForAI-linux-x64-${{ github.sha }}
+          path: publish/linux-x64
+          if-no-files-found: error
+          retention-days: 14
 
   # Only on main (push/merge) — exercises Windows without paying the higher
   # Windows-minute cost on every PR.
@@ -32,3 +44,15 @@ jobs:
       - run: dotnet restore SmtpForAI.slnx
       - run: dotnet build SmtpForAI.slnx -c Release --no-restore
       - run: dotnet test SmtpForAI.slnx -c Release --no-build
+      - name: Publish self-contained win-x64
+        run: >
+          dotnet publish SmtpForAI/SmtpForAI.csproj
+          -c Release -r win-x64 --self-contained true
+          -o publish/win-x64
+      - name: Upload win-x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmtpForAI-win-x64-${{ github.sha }}
+          path: publish/win-x64
+          if-no-files-found: error
+          retention-days: 14
