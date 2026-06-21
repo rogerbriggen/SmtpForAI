@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   # Runs on every push and PR — Linux is the cheap default.
   linux:
