@@ -34,6 +34,18 @@ jobs:
           path: publish/linux-x64
           if-no-files-found: error
           retention-days: 14
+      - name: Publish framework-dependent (linux apphost)
+        run: >
+          dotnet publish SmtpForAI/SmtpForAI.csproj
+          -c Release --no-self-contained
+          -o publish/portable-linux
+      - name: Upload portable-linux artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SmtpForAI-portable-linux-${{ github.sha }}
+          path: publish/portable-linux
+          if-no-files-found: error
+          retention-days: 14
 
   # Only on main (push/merge) — exercises Windows without paying the higher
   # Windows-minute cost on every PR.
@@ -61,6 +73,18 @@ jobs:
         with:
           name: SmtpForAI-win-x64-${{ github.sha }}
           path: publish/win-x64
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish framework-dependent (windows apphost)
+        run: >
+          dotnet publish SmtpForAI/SmtpForAI.csproj
+          -c Release --no-self-contained
+          -o publish/portable-win
+      - name: Upload portable-win artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SmtpForAI-portable-win-${{ github.sha }}
+          path: publish/portable-win
           if-no-files-found: error
           retention-days: 14
 
