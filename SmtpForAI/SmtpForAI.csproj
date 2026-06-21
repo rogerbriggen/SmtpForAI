@@ -9,14 +9,14 @@
     <!-- PublishAot remains disabled (MailKit/MimeKit and the MCP SDK are
          reflection-heavy and not AOT-safe). Partial trimming is safe:
          only assemblies that opt in (IsTrimmable=true) get trimmed, and
-         the BCL is the only large opt-in here. Trim attributes apply
-         only to self-contained publish, so plain `dotnet build` is
-         unchanged. -->
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>partial</TrimMode>
+         the BCL is the only large opt-in here. Gated on SelfContained
+         because the SDK rejects trimming for framework-dependent
+         publishes (NETSDK1102). -->
+    <PublishTrimmed Condition="'$(SelfContained)' == 'true'">true</PublishTrimmed>
+    <TrimMode Condition="'$(SelfContained)' == 'true'">partial</TrimMode>
     <!-- Trim flips this off by default; the MCP SDK uses reflection-based
          JSON to serialize our tool argument/result records, so we opt back in. -->
-    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <JsonSerializerIsReflectionEnabledByDefault Condition="'$(SelfContained)' == 'true'">true</JsonSerializerIsReflectionEnabledByDefault>
     <RootNamespace>SmtpForAI</RootNamespace>
     <UserSecretsId>db1886fb-507f-4d0d-99a5-cf61a70a8a45</UserSecretsId>
   </PropertyGroup>

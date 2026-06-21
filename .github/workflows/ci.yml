@@ -35,13 +35,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Publish framework-dependent (linux apphost)
-        # PublishTrimmed=false: the csproj enables partial trim for
-        # self-contained publishes; trimming is unsupported when
-        # --no-self-contained, so override here.
         run: >
           dotnet publish SmtpForAI/SmtpForAI.csproj
           -c Release --no-self-contained
-          -p:PublishTrimmed=false
           -o publish/portable-linux
       - name: Upload portable-linux artifact
         uses: actions/upload-artifact@v7
@@ -80,13 +76,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Publish framework-dependent (windows apphost)
-        # PublishTrimmed=false: the csproj enables partial trim for
-        # self-contained publishes; trimming is unsupported when
-        # --no-self-contained, so override here.
         run: >
           dotnet publish SmtpForAI/SmtpForAI.csproj
           -c Release --no-self-contained
-          -p:PublishTrimmed=false
           -o publish/portable-win
       - name: Upload portable-win artifact
         uses: actions/upload-artifact@v7
