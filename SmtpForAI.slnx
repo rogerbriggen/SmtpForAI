@@ -2,6 +2,7 @@
   <Folder Name="/Projektmappenelemente/">
     <File Path=".gitignore" />
     <File Path="AGENTS.md" />
+    <File Path="Directory.Build.props" />
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>

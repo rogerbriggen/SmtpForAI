@@ -100,6 +100,15 @@ recipient count must be within `MaxRecipients`, and each attachment within `MaxA
 | `2` | Config or policy error (not configured, recipient not on allowlist, attachment too large…) |
 | `3` | SMTP send failure |
 
+### Check the version
+
+```bash
+SmtpForAI --version    # or: SmtpForAI -v, SmtpForAI version
+```
+
+Prints something like `SmtpForAI 1.0.12-pre+abc1234` (the suffix is the git commit; on a
+release build it is omitted, e.g. `SmtpForAI 1.0.12`).
+
 ### Troubleshooting
 
 - **`2` "not configured"** — run `SmtpForAI config show` to see which fields are missing.
@@ -199,6 +208,23 @@ dotnet run --project SmtpForAI -- config show
 - **Linux** (`ubuntu-latest`) on every push and pull request — the cheap default.
 - **Windows** (`windows-latest`) only on `main`, to exercise Windows without paying the higher
   Windows-minute cost on every PR.
+- **`verify-release-version`** runs on `release/*` branches and PRs targeting them, and fails
+  the build if `version.json` still has a `-pre` suffix. The check is a `pwsh` step so the
+  same script is portable across Windows, macOS, and Linux runners.
+
+### Versioning
+
+The repo uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (NBGV),
+driven by `version.json` at the repo root. NBGV stamps `AssemblyVersion`, `FileVersion`, and
+`AssemblyInformationalVersion` on every build — there are no version literals in any `.csproj`.
+
+- **Day-to-day** `version.json` reads `"version": "1.0-pre"`, so feature-branch builds produce
+  e.g. `1.0.12-pre+abc1234` (height + short commit hash).
+- **Releasing** Cut a `release/<x.y>` branch, edit `version.json` to drop the `-pre` suffix
+  (e.g. `"version": "1.0"`), and push. The `verify-release-version` CI job will fail the
+  branch if you forget. Merge the PR, then tag the merge commit.
+- The `publicReleaseRefSpec` in `version.json` lists `main` and `release/*`, so builds on those
+  refs omit the `+gitHash` build-metadata suffix.
 
 ### Skill packaging
 

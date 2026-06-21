@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   # Runs on every push and PR — Linux is the cheap default.
   linux:
@@ -11,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v5.3.0
         with:
           dotnet-version: '10.0.x'
@@ -56,3 +61,27 @@ jobs:
           path: publish/win-x64
           if-no-files-found: error
           retention-days: 14
+
+  # On release/* branches (and PRs targeting them), require that version.json
+  # has had the "-pre" suffix removed before merging. Uses pwsh so the same
+  # script is portable across Windows, macOS, and Linux runners.
+  verify-release-version:
+    name: Verify release branch has no -pre tag
+    if: startsWith(github.ref, 'refs/heads/release/') || startsWith(github.base_ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check version.json has no prerelease suffix
+        shell: pwsh
+        run: |
+          $json = Get-Content version.json -Raw | ConvertFrom-Json
+          $v = $json.version
+          if ([string]::IsNullOrWhiteSpace($v)) {
+            Write-Error "version.json is missing a 'version' field."
+            exit 1
+          }
+          if ($v -match '-') {
+            Write-Error "Release branch must not have a prerelease tag in version.json. Found: '$v'. Remove the '-pre' suffix before merging."
+            exit 1
+          }
+          Write-Host "OK: version.json on release branch is '$v' (no prerelease suffix)."
