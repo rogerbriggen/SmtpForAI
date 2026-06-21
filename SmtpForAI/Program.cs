@@ -1,3 +1,4 @@
+using System.Reflection;
 using SmtpForAI.Cli;
 using SmtpForAI.Commands;
 using SmtpForAI.Configuration;
@@ -21,6 +22,7 @@ internal static class Program
                 "config" => ConfigCommand.Run(rest, app),
                 "mcp" => McpCommand.Run(rest, app),
                 "help" or "--help" or "-h" => PrintUsage(ExitCodes.Success),
+                "version" or "--version" or "-v" => PrintVersion(),
                 "" => StatusThenUsage(app),
                 _ => UnknownCommand(command),
             };
@@ -57,6 +59,16 @@ internal static class Program
         return PrintUsage(ExitCodes.Success);
     }
 
+    private static int PrintVersion()
+    {
+        var asm = typeof(Program).Assembly;
+        var info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? asm.GetName().Version?.ToString()
+            ?? "unknown";
+        Console.WriteLine($"SmtpForAI {info}");
+        return ExitCodes.Success;
+    }
+
     private static int PrintUsage(int exitCode)
     {
         Console.WriteLine(
@@ -88,6 +100,8 @@ internal static class Program
                                                Exposes send_email, validate_recipient, get_config_status.
                                                Same allowlist/limits as the CLI; intended to be launched
                                                by an MCP client (e.g. Claude Desktop), not run manually.
+
+              SmtpForAI version                Print the build version (also: --version, -v).
 
             Exit codes: 0 success, 1 usage error, 2 config/policy error, 3 send failure.
             """);
