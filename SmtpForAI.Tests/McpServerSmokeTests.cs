@@ -12,6 +12,14 @@ public sealed class McpServerSmokeTests
 {
     private static string FindExe()
     {
+        // SMTPFORAI_TEST_EXE lets a developer point the smoke tests at a
+        // published (e.g. trimmed self-contained) exe for verification.
+        var envOverride = Environment.GetEnvironmentVariable("SMTPFORAI_TEST_EXE");
+        if (!string.IsNullOrWhiteSpace(envOverride))
+        {
+            Assert.IsTrue(File.Exists(envOverride), $"SMTPFORAI_TEST_EXE points at non-existent path: {envOverride}");
+            return envOverride;
+        }
         // Tests run from .../SmtpForAI.Tests/bin/<config>/net10.0/. The main exe is
         // built into the sibling project's bin tree under the same config.
         var assemblyDir = Path.GetDirectoryName(typeof(McpServerSmokeTests).Assembly.Location)!;
