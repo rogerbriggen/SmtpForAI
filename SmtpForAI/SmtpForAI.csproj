@@ -17,6 +17,17 @@
     <!-- Trim flips this off by default; the MCP SDK uses reflection-based
          JSON to serialize our tool argument/result records, so we opt back in. -->
     <JsonSerializerIsReflectionEnabledByDefault Condition="'$(SelfContained)' == 'true'">true</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Trim feature switches: opt out of BCL features SmtpForAI does not
+         use so the trimmer can drop the corresponding code paths. Only
+         meaningful in combination with PublishTrimmed above, so gated on
+         SelfContained for the same reason. -->
+    <DebuggerSupport Condition="'$(SelfContained)' == 'true'">false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization Condition="'$(SelfContained)' == 'true'">false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeUTF7Encoding Condition="'$(SelfContained)' == 'true'">false</EnableUnsafeUTF7Encoding>
+    <EventSourceSupport Condition="'$(SelfContained)' == 'true'">false</EventSourceSupport>
+    <HttpActivityPropagationSupport Condition="'$(SelfContained)' == 'true'">false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport Condition="'$(SelfContained)' == 'true'">false</MetadataUpdaterSupport>
+    <UseSystemResourceKeys Condition="'$(SelfContained)' == 'true'">true</UseSystemResourceKeys>
     <RootNamespace>SmtpForAI</RootNamespace>
     <UserSecretsId>db1886fb-507f-4d0d-99a5-cf61a70a8a45</UserSecretsId>
   </PropertyGroup>
