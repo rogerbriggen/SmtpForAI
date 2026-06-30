@@ -121,23 +121,93 @@ release build it is omitted, e.g. `SmtpForAI 1.0.12`).
 ### Use from an AI assistant via MCP
 
 `SmtpForAI mcp` starts a [Model Context Protocol](https://modelcontextprotocol.io) server over
-stdio so MCP-aware clients (Claude Desktop, Cursor, …) can call the tool directly. Configure
-SmtpForAI normally first (`SmtpForAI config`), then point the client at the published exe.
+stdio so MCP-aware clients (Claude Desktop, Cursor, …) can call the tool directly.
 
-**Claude Desktop** — add to `claude_desktop_config.json` (Settings → Developer → Edit Config):
+#### Configure Claude Desktop
+
+**Prerequisites**
+
+1. Publish a self-contained executable (see [Build or publish](#1-build-or-publish) above) and
+   place it somewhere stable, e.g. `C:\Tools\SmtpForAI\SmtpForAI.exe`. Claude Desktop will
+   launch this exe on every start, so don't put it in a temp/build directory.
+2. Configure SmtpForAI **before** wiring it into Claude Desktop. The MCP server reads the same
+   `appsettings.json` + user-secrets as the CLI, and refuses to send if any required field is
+   missing:
+
+   ```bash
+   SmtpForAI config           # interactive setup
+   SmtpForAI config show      # confirm "Configured: True"
+   ```
+
+3. Install [Claude Desktop](https://claude.ai/download) (the desktop app — the web version at
+   claude.ai does not support local MCP servers).
+
+**Step 1 — locate `claude_desktop_config.json`**
+
+The easiest way is from inside Claude Desktop: open **Settings → Developer → Edit Config**.
+That creates the file if it doesn't exist and opens its folder. By default it lives at:
+
+| OS | Path |
+| --- | --- |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
+
+**Step 2 — add the `smtpforai` server**
+
+Open the file in any text editor and add an `mcpServers` entry. If the file is empty, paste
+this whole snippet; if it already has other servers, just add the `"smtpforai"` block inside
+the existing `mcpServers` object.
+
+Windows (note the doubled backslashes — JSON requires `\\`):
 
 ```json
 {
   "mcpServers": {
     "smtpforai": {
-      "command": "C:\\path\\to\\SmtpForAI.exe",
+      "command": "C:\\Tools\\SmtpForAI\\SmtpForAI.exe",
       "args": ["mcp"]
     }
   }
 }
 ```
 
-Restart Claude Desktop. Three tools become available:
+macOS / Linux:
+
+```json
+{
+  "mcpServers": {
+    "smtpforai": {
+      "command": "/usr/local/bin/SmtpForAI",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+The `command` must be the **absolute path** to the published executable — Claude Desktop does
+not inherit your shell's `PATH`. No `env`, `cwd`, or extra args are needed; SmtpForAI reads
+`appsettings.json` from next to the exe and the password from your user profile's secrets
+store.
+
+**Step 3 — restart Claude Desktop**
+
+Fully quit and relaunch Claude Desktop (on Windows, also check the system tray; on macOS, use
+⌘Q — closing the window only). Connections are established at startup, so a reload isn't
+enough.
+
+**Step 4 — verify it's connected**
+
+In a new chat, open **Settings → Developer** and confirm `smtpforai` shows as **running**.
+Then ask Claude something like:
+
+> Use the `get_config_status` tool from smtpforai and show me the result.
+
+It should return JSON with `"configured": true` and your configured host/port. If you instead
+see "I don't have access to that tool" or the server is marked **failed**, see Troubleshooting
+below.
+
+#### Tools exposed over MCP
 
 | Tool | What it does |
 | --- | --- |
@@ -148,6 +218,22 @@ Restart Claude Desktop. Three tools become available:
 The MCP path uses the **same** allowlist, per-message limits, and fail-closed behavior as the
 CLI — there is no MCP-only "trusted" mode. There is intentionally no `set_config` tool, so an
 AI prompt cannot relax the policy or change credentials.
+
+#### Troubleshooting Claude Desktop
+
+- **Server status shows "failed"** — open Claude Desktop's MCP log. On Windows it is
+  `%APPDATA%\Claude\logs\mcp-server-smtpforai.log`; on macOS
+  `~/Library/Logs/Claude/mcp-server-smtpforai.log`. SmtpForAI routes all its own logging to
+  stderr, so any startup error (missing file, bad JSON, .NET runtime missing) appears there.
+- **`send_email` returns "not configured"** — Claude Desktop launched the exe, but
+  `appsettings.json` / user-secrets are missing values. Run `SmtpForAI config show` from a
+  terminal **as the same OS user** that runs Claude Desktop and fix any reported gaps.
+- **`send_email` returns "not on the allowlist"** — expected: add the recipient or domain via
+  `SmtpForAI config set --allow-domain example.com` (or `--allow-recipient`). The policy is
+  intentionally CLI-only.
+- **Tool list is empty after restart** — confirm the JSON is valid (a trailing comma or
+  single backslash on Windows is the usual cause) and that the `command` path actually exists.
+  `claude_desktop_config.json` errors are silent on the UI; they only show up in the log.
 
 ---
 
