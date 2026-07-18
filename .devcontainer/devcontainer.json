@@ -1,0 +1,59 @@
+// Dev container for SmtpForAI (.NET 10 console app / MCP server).
+// Open with VS Code "Dev Containers: Reopen in Container" (requires Docker
+// and the ms-vscode-remote.remote-containers extension on the host).
+{
+	"name": "SmtpForAI (.NET 10)",
+
+	// Debian-based image with the .NET 10 SDK preinstalled (matches global.json,
+	// which allows rollForward to the latest 10.0.x feature band).
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+
+	"features": {
+		// Latest git (Nerdbank.GitVersioning needs full history — clone with
+		// full depth, do not use a shallow clone).
+		"ghcr.io/devcontainers/features/git:1": {},
+		// GitHub CLI (gh) — PRs, issues, API.
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		// Node.js LTS — required runtime for Copilot CLI and Codex CLI.
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		},
+		// PowerShell — CI release-version check script uses pwsh.
+		"ghcr.io/devcontainers/features/powershell:1": {},
+		// Claude Code CLI (official Anthropic dev container feature).
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+	},
+
+	// GitHub Copilot CLI + OpenAI Codex CLI, then prime the NuGet cache.
+	"postCreateCommand": "npm install -g @github/copilot @openai/codex && dotnet restore SmtpForAI.slnx",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				// C# / .NET
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.csharp",
+				"editorconfig.editorconfig",
+				// AI assistants
+				"anthropic.claude-code",
+				"github.copilot",
+				"github.copilot-chat",
+				// GitHub integration
+				"github.vscode-pull-request-github",
+				"github.vscode-github-actions"
+			],
+			"settings": {
+				"dotnet.defaultSolution": "SmtpForAI.slnx",
+				"editor.formatOnSave": true,
+				"terminal.integrated.defaultProfile.linux": "bash"
+			}
+		}
+	},
+
+	// Persist Claude Code auth/config across container rebuilds.
+	"mounts": [
+		"source=claude-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+	],
+
+	"remoteUser": "vscode"
+}
