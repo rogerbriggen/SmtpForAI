@@ -171,7 +171,49 @@ skill/                     # SKILL.md (AI skill manifest) + catalog.json
 
 ### Prerequisites
 
-- .NET 10 SDK (pinned via `global.json`).
+- .NET 10 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
+  its own SDK.
+
+### Dev container
+
+The repo ships a [dev container](https://containers.dev) (`.devcontainer/devcontainer.json`)
+so you can develop in an isolated Docker container instead of installing anything on the host.
+
+**Host requirements:** Docker (e.g. Docker Desktop) and VS Code with the
+[Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+extension. Open the repo folder and run **“Dev Containers: Reopen in Container”**.
+
+The container is based on the official .NET 10 SDK dev-container image and adds:
+
+- **Tooling:** git, GitHub CLI (`gh`), Node.js LTS, PowerShell (used by the CI release check).
+- **AI CLIs:** Claude Code (`claude`), GitHub Copilot CLI (`copilot`), OpenAI Codex (`codex`).
+- **VS Code extensions** (installed automatically *inside* the container): C# Dev Kit, C#,
+  EditorConfig, Claude Code, Copilot + Copilot Chat, GitHub Pull Requests, GitHub Actions.
+
+On first create it also runs `dotnet restore` so the NuGet cache is warm.
+
+**One-time logins.** CLI credentials are persisted in fixed-name Docker volumes
+(`claude-config`, `gh-config`, `copilot-config`, `codex-config`) mounted into the container,
+so you authenticate once and the logins survive rebuilds — and are shared with any other dev
+container on the machine that mounts the same volumes:
+
+```bash
+claude            # Claude Pro/Max OAuth flow
+gh auth login     # GitHub CLI
+copilot           # prompts for GitHub auth on first run
+codex login       # ChatGPT-account OAuth
+```
+
+Git credentials need no setup: VS Code forwards the host's git credential helper (and SSH
+agent) into the container automatically.
+
+**Notes**
+
+- The volumes only vanish via an explicit `docker volume rm` / `docker volume prune` —
+  rebuilding or deleting the container keeps them.
+- Because the auth volumes are shared, any code you run in a container that mounts them can
+  read those tokens. For untrusted third-party code, use a container without these mounts.
+- Nerdbank.GitVersioning needs full git history — don't use a shallow clone.
 
 ### Build / run / test
 
