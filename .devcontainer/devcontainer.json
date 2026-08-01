@@ -1,0 +1,71 @@
+// Dev container for SmtpForAI (.NET 10 console app / MCP server).
+// Open with VS Code "Dev Containers: Reopen in Container" (requires Docker
+// and the ms-vscode-remote.remote-containers extension on the host).
+{
+	"name": "SmtpForAI (.NET 10)",
+
+	// Debian-based image with the .NET 10 SDK preinstalled (matches global.json,
+	// which allows rollForward to the latest 10.0.x feature band).
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+
+	"features": {
+		// Latest git (Nerdbank.GitVersioning needs full history — clone with
+		// full depth, do not use a shallow clone).
+		"ghcr.io/devcontainers/features/git:1": {},
+		// GitHub CLI (gh) — PRs, issues, API.
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		// Node.js LTS — required runtime for Copilot CLI and Codex CLI.
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		},
+		// PowerShell — CI release-version check script uses pwsh.
+		"ghcr.io/devcontainers/features/powershell:1": {},
+		// Claude Code CLI (official Anthropic dev container feature).
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+	},
+
+	// Fix ownership of the auth volumes (fresh named volumes are root-owned),
+	// install GitHub Copilot CLI + OpenAI Codex CLI, then prime the NuGet cache.
+	"postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude /home/vscode/.config /home/vscode/.copilot /home/vscode/.codex && npm install -g @github/copilot @openai/codex && dotnet restore SmtpForAI.slnx",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				// C# / .NET
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.csharp",
+				"editorconfig.editorconfig",
+				// AI assistants
+				"anthropic.claude-code",
+				"github.copilot",
+				"github.copilot-chat",
+				// GitHub integration
+				"github.vscode-pull-request-github",
+				"github.vscode-github-actions"
+			],
+			"settings": {
+				"dotnet.defaultSolution": "SmtpForAI.slnx",
+				"editor.formatOnSave": true,
+				"terminal.integrated.defaultProfile.linux": "bash"
+			}
+		}
+	},
+
+	// Persist CLI auth/config across container rebuilds. Fixed volume names
+	// (no ${devcontainerId} suffix) so the same login is shared by every
+	// dev container on this machine that uses these mounts — log in once.
+	"mounts": [
+		"source=claude-config,target=/home/vscode/.claude,type=volume",
+		"source=gh-config,target=/home/vscode/.config/gh,type=volume",
+		"source=copilot-config,target=/home/vscode/.copilot,type=volume",
+		"source=codex-config,target=/home/vscode/.codex,type=volume"
+	],
+
+	// Keep all Claude Code state (including the top-level ~/.claude.json)
+	// inside the mounted ~/.claude volume so nothing is lost on rebuild.
+	"remoteEnv": {
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+	},
+
+	"remoteUser": "vscode"
+}
