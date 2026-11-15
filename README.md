@@ -51,11 +51,11 @@ SmtpForAI config show
 ```
 
 Where things are stored:
-- **`appsettings.json`** ÔÇö next to the executable. Holds the `Smtp` (host/port/auth/from) and
+- **`appsettings.json`** — next to the executable. Holds the `Smtp` (host/port/auth/from) and
   `Security` (allowlist/limits) sections.
-- **`secrets.json`** ÔÇö in your user profile (e.g. on Windows
+- **`secrets.json`** — in your user profile (e.g. on Windows
   `%APPDATA%\Microsoft\UserSecrets\<id>\secrets.json`), holding only `Smtp:Password`.
-  This is plaintext but kept out of the repository ÔÇö treat your profile accordingly.
+  This is plaintext but kept out of the repository — treat your profile accordingly.
 
 ### 3. Send
 
@@ -97,7 +97,7 @@ recipient count must be within `MaxRecipients`, and each attachment within `MaxA
 | --- | --- |
 | `0` | Success |
 | `1` | Usage error (unknown/incomplete command line) |
-| `2` | Config or policy error (not configured, recipient not on allowlist, attachment too largeÔÇª) |
+| `2` | Config or policy error (not configured, recipient not on allowlist, attachment too large…) |
 | `3` | SMTP send failure |
 
 ### Check the version
@@ -111,17 +111,17 @@ release build it is omitted, e.g. `SmtpForAI 1.0.12`).
 
 ### Troubleshooting
 
-- **`2` "not configured"** ÔÇö run `SmtpForAI config show` to see which fields are missing.
-- **`2` "not on the allowlist"** ÔÇö add the recipient/domain via `config set --allow-domain ÔÇª`.
-- **`3` authentication failed** ÔÇö many providers require an *app password*, not your login
+- **`2` "not configured"** — run `SmtpForAI config show` to see which fields are missing.
+- **`2` "not on the allowlist"** — add the recipient/domain via `config set --allow-domain …`.
+- **`3` authentication failed** — many providers require an *app password*, not your login
   password. Check the username and that the account allows SMTP.
-- **`3` TLS/connection errors** ÔÇö verify host/port and `--use-ssl`. Port `465` uses implicit
+- **`3` TLS/connection errors** — verify host/port and `--use-ssl`. Port `465` uses implicit
   TLS; port `587` uses STARTTLS; `--use-ssl false` disables both.
 
 ### Use from an AI assistant via MCP
 
 `SmtpForAI mcp` starts a [Model Context Protocol](https://modelcontextprotocol.io) server over
-stdio so MCP-aware clients (Claude Desktop, Cursor, ÔÇª) can call the tool directly.
+stdio so MCP-aware clients (Claude Desktop, Cursor, …) can call the tool directly.
 
 #### Configure Claude Desktop
 
@@ -139,12 +139,12 @@ stdio so MCP-aware clients (Claude Desktop, Cursor, ÔÇª) can call the tool di
    SmtpForAI config show      # confirm "Configured: True"
    ```
 
-3. Install [Claude Desktop](https://claude.ai/download) (the desktop app ÔÇö the web version at
+3. Install [Claude Desktop](https://claude.ai/download) (the desktop app — the web version at
    claude.ai does not support local MCP servers).
 
-**Step 1 ÔÇö locate `claude_desktop_config.json`**
+**Step 1 — locate `claude_desktop_config.json`**
 
-The easiest way is from inside Claude Desktop: open **Settings ÔåÆ Developer ÔåÆ Edit Config**.
+The easiest way is from inside Claude Desktop: open **Settings → Developer → Edit Config**.
 That creates the file if it doesn't exist and opens its folder. By default it lives at:
 
 | OS | Path |
@@ -153,13 +153,13 @@ That creates the file if it doesn't exist and opens its folder. By default it li
 | macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Linux | `~/.config/Claude/claude_desktop_config.json` |
 
-**Step 2 ÔÇö add the `smtpforai` server**
+**Step 2 — add the `smtpforai` server**
 
 Open the file in any text editor and add an `mcpServers` entry. If the file is empty, paste
 this whole snippet; if it already has other servers, just add the `"smtpforai"` block inside
 the existing `mcpServers` object.
 
-Windows (note the doubled backslashes ÔÇö JSON requires `\\`):
+Windows (note the doubled backslashes — JSON requires `\\`):
 
 ```json
 {
@@ -185,20 +185,20 @@ macOS / Linux:
 }
 ```
 
-The `command` must be the **absolute path** to the published executable ÔÇö Claude Desktop does
+The `command` must be the **absolute path** to the published executable — Claude Desktop does
 not inherit your shell's `PATH`. No `env`, `cwd`, or extra args are needed; SmtpForAI reads
 `appsettings.json` from next to the exe and the password from your user profile's secrets
 store.
 
-**Step 3 ÔÇö restart Claude Desktop**
+**Step 3 — restart Claude Desktop**
 
 Fully quit and relaunch Claude Desktop (on Windows, also check the system tray; on macOS, use
-ÔîÿQ ÔÇö closing the window only). Connections are established at startup, so a reload isn't
+⌘Q — closing the window only). Connections are established at startup, so a reload isn't
 enough.
 
-**Step 4 ÔÇö verify it's connected**
+**Step 4 — verify it's connected**
 
-In a new chat, open **Settings ÔåÆ Developer** and confirm `smtpforai` shows as **running**.
+In a new chat, open **Settings → Developer** and confirm `smtpforai` shows as **running**.
 Then ask Claude something like:
 
 > Use the `get_config_status` tool from smtpforai and show me the result.
@@ -216,22 +216,22 @@ below.
 | `get_config_status` | Read-only status: `configured`, `missing[]`, `hasPassword` (the password value is never returned), plus host/port and allowlist counts. |
 
 The MCP path uses the **same** allowlist, per-message limits, and fail-closed behavior as the
-CLI ÔÇö there is no MCP-only "trusted" mode. There is intentionally no `set_config` tool, so an
+CLI — there is no MCP-only "trusted" mode. There is intentionally no `set_config` tool, so an
 AI prompt cannot relax the policy or change credentials.
 
 #### Troubleshooting Claude Desktop
 
-- **Server status shows "failed"** ÔÇö open Claude Desktop's MCP log. On Windows it is
+- **Server status shows "failed"** — open Claude Desktop's MCP log. On Windows it is
   `%APPDATA%\Claude\logs\mcp-server-smtpforai.log`; on macOS
   `~/Library/Logs/Claude/mcp-server-smtpforai.log`. SmtpForAI routes all its own logging to
   stderr, so any startup error (missing file, bad JSON, .NET runtime missing) appears there.
-- **`send_email` returns "not configured"** ÔÇö Claude Desktop launched the exe, but
+- **`send_email` returns "not configured"** — Claude Desktop launched the exe, but
   `appsettings.json` / user-secrets are missing values. Run `SmtpForAI config show` from a
   terminal **as the same OS user** that runs Claude Desktop and fix any reported gaps.
-- **`send_email` returns "not on the allowlist"** ÔÇö expected: add the recipient or domain via
+- **`send_email` returns "not on the allowlist"** — expected: add the recipient or domain via
   `SmtpForAI config set --allow-domain example.com` (or `--allow-recipient`). The policy is
   intentionally CLI-only.
-- **Tool list is empty after restart** ÔÇö confirm the JSON is valid (a trailing comma or
+- **Tool list is empty after restart** — confirm the JSON is valid (a trailing comma or
   single backslash on Windows is the usual cause) and that the `command` path actually exists.
   `claude_desktop_config.json` errors are silent on the UI; they only show up in the log.
 
@@ -257,7 +257,7 @@ skill/                     # SKILL.md (AI skill manifest) + catalog.json
 
 ### Prerequisites
 
-- .NET 11 SDK (pinned via `global.json`) ÔÇö **or** use the dev container below, which brings
+- .NET 11 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
   its own SDK.
 
 ### Dev container
@@ -267,7 +267,7 @@ so you can develop in an isolated Docker container instead of installing anythin
 
 **Host requirements:** Docker (e.g. Docker Desktop) and VS Code with the
 [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-extension. Open the repo folder and run **ÔÇ£Dev Containers: Reopen in ContainerÔÇØ**.
+extension. Open the repo folder and run **“Dev Containers: Reopen in Container”**.
 
 The container is based on the official .NET 11 SDK dev-container image and adds:
 
@@ -280,7 +280,7 @@ On first create it also runs `dotnet restore` so the NuGet cache is warm.
 
 **One-time logins.** CLI credentials are persisted in fixed-name Docker volumes
 (`claude-config`, `gh-config`, `copilot-config`, `codex-config`) mounted into the container,
-so you authenticate once and the logins survive rebuilds ÔÇö and are shared with any other dev
+so you authenticate once and the logins survive rebuilds — and are shared with any other dev
 container on the machine that mounts the same volumes:
 
 ```bash
@@ -295,11 +295,11 @@ agent) into the container automatically.
 
 **Notes**
 
-- The volumes only vanish via an explicit `docker volume rm` / `docker volume prune` ÔÇö
+- The volumes only vanish via an explicit `docker volume rm` / `docker volume prune` —
   rebuilding or deleting the container keeps them.
 - Because the auth volumes are shared, any code you run in a container that mounts them can
   read those tokens. For untrusted third-party code, use a container without these mounts.
-- Nerdbank.GitVersioning needs full git history ÔÇö don't use a shallow clone.
+- Nerdbank.GitVersioning needs full git history — don't use a shallow clone.
 
 ### Build / run / test
 
@@ -327,13 +327,13 @@ dotnet run --project SmtpForAI -- config show
 - **Reflection-free config.** `SmtpSettings.Load` reads values via the `IConfiguration` indexer
   and `GetChildren()` (no binder), keeping the door open to trimming.
 - **Secrets.** `UserSecretsStore` reads/writes `secrets.json` with `JsonNode`, keyed
-  `"Smtp:Password"` exactly as the .NET config system stores it ÔÇö so the file stays compatible
+  `"Smtp:Password"` exactly as the .NET config system stores it — so the file stays compatible
   with the `dotnet user-secrets` CLI.
 
 ### CI
 
 `.github/workflows/ci.yml` builds and tests the solution:
-- **Linux** (`ubuntu-latest`) on every push and pull request ÔÇö the cheap default.
+- **Linux** (`ubuntu-latest`) on every push and pull request — the cheap default.
 - **Windows** (`windows-latest`) only on `main`, to exercise Windows without paying the higher
   Windows-minute cost on every PR.
 - **`verify-release-version`** runs on `release/*` branches and PRs targeting them, and fails
@@ -344,7 +344,7 @@ dotnet run --project SmtpForAI -- config show
 
 The repo uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (NBGV),
 driven by `version.json` at the repo root. NBGV stamps `AssemblyVersion`, `FileVersion`, and
-`AssemblyInformationalVersion` on every build ÔÇö there are no version literals in any `.csproj`.
+`AssemblyInformationalVersion` on every build — there are no version literals in any `.csproj`.
 
 - **Day-to-day** `version.json` reads `"version": "1.0-pre"`, so feature-branch builds produce
   e.g. `1.0.12-pre+abc1234` (height + short commit hash).
