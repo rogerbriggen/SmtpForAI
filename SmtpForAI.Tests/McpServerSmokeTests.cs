@@ -12,13 +12,13 @@ public sealed class McpServerSmokeTests
 {
     private static string FindExe()
     {
-        // Tests run from .../SmtpForAI.Tests/bin/<config>/net10.0/. The main exe is
+        // Tests run from .../SmtpForAI.Tests/bin/<config>/net11.0/. The main exe is
         // built into the sibling project's bin tree under the same config.
         var assemblyDir = Path.GetDirectoryName(typeof(McpServerSmokeTests).Assembly.Location)!;
         var config = new DirectoryInfo(assemblyDir).Parent!.Name;       // Debug or Release
         var repoRoot = new DirectoryInfo(assemblyDir).Parent!.Parent!.Parent!.Parent!.FullName;
         var exeName = OperatingSystem.IsWindows() ? "SmtpForAI.exe" : "SmtpForAI";
-        var path = Path.Combine(repoRoot, "SmtpForAI", "bin", config, "net10.0", exeName);
+        var path = Path.Combine(repoRoot, "SmtpForAI", "bin", config, "net11.0", exeName);
         Assert.IsTrue(File.Exists(path), $"SmtpForAI exe not found at {path} — build the main project first.");
         return path;
     }

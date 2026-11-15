@@ -6,7 +6,7 @@ A small, secure command-line tool that lets AI assistants (via "skills") send em
 Configuration lives in `appsettings.json`; the SMTP password is kept in the .NET secret manager
 (out of source control). A recipient **allowlist** and per-message limits prevent abuse.
 
-Built on .NET 10. The only non-Microsoft dependency is [MailKit](https://github.com/jstedfast/MailKit)
+Built on .NET 11. The only non-Microsoft dependency is [MailKit](https://github.com/jstedfast/MailKit)
 (the library Microsoft recommends in place of the legacy `System.Net.Mail.SmtpClient`).
 
 ---
@@ -171,7 +171,7 @@ skill/                     # SKILL.md (AI skill manifest) + catalog.json
 
 ### Prerequisites
 
-- .NET 10 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
+- .NET 11 SDK (pinned via `global.json`) — **or** use the dev container below, which brings
   its own SDK.
 
 ### Dev container
@@ -183,7 +183,7 @@ so you can develop in an isolated Docker container instead of installing anythin
 [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 extension. Open the repo folder and run **“Dev Containers: Reopen in Container”**.
 
-The container is based on the official .NET 10 SDK dev-container image and adds:
+The container is based on the official .NET 11 SDK dev-container image and adds:
 
 - **Tooling:** git, GitHub CLI (`gh`), Node.js LTS, PowerShell (used by the CI release check).
 - **AI CLIs:** Claude Code (`claude`), GitHub Copilot CLI (`copilot`), OpenAI Codex (`codex`).
