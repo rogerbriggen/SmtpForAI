@@ -1,12 +1,12 @@
-// Dev container for SmtpForAI (.NET 10 console app / MCP server).
+// Dev container for SmtpForAI (.NET 11 console app / MCP server).
 // Open with VS Code "Dev Containers: Reopen in Container" (requires Docker
 // and the ms-vscode-remote.remote-containers extension on the host).
 {
-	"name": "SmtpForAI (.NET 10)",
+	"name": "SmtpForAI (.NET 11)",
 
-	// Debian-based image with the .NET 10 SDK preinstalled (matches global.json,
-	// which allows rollForward to the latest 10.0.x feature band).
-	"image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+	// Ubuntu-based image with the .NET 11 SDK preinstalled (matches global.json,
+	// which allows rollForward to the latest 11.0.x feature band).
+	"image": "mcr.microsoft.com/devcontainers/dotnet:2-11.0-resolute",
 
 	"features": {
 		// Latest git (Nerdbank.GitVersioning needs full history — clone with

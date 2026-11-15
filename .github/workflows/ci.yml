@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  # Runs on every push and PR — Linux is the cheap default.
+  # Runs on every push and PR ÔÇö Linux is the cheap default.
   linux:
     name: Build & Test (Linux)
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-dotnet@v6.1.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - run: dotnet restore SmtpForAI.slnx
       - run: dotnet build SmtpForAI.slnx -c Release --no-restore
       - run: dotnet test SmtpForAI.slnx -c Release --no-build
@@ -47,7 +47,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # Only on main (push/merge) — exercises Windows without paying the higher
+  # Only on main (push/merge) ÔÇö exercises Windows without paying the higher
   # Windows-minute cost on every PR.
   windows:
     name: Build & Test (Windows)
@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-dotnet@v6.1.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
       - run: dotnet restore SmtpForAI.slnx
       - run: dotnet build SmtpForAI.slnx -c Release --no-restore
       - run: dotnet test SmtpForAI.slnx -c Release --no-build
